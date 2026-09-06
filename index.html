@@ -3,77 +3,128 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>บันทึกแคลอรี่ AI</title>
+  <title>ไดอารี่บันทึกแคลอรี่ AI</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
 </head>
-<body class="bg-slate-100 min-h-screen p-4">
-  <div class="max-w-md mx-auto bg-white rounded-2xl shadow p-5 mt-4">
-    <h1 class="text-xl font-bold text-slate-800 mb-3 text-center">🥗 คำนวณแคลอรี่อาหาร AI</h1>
+<body class="bg-slate-100 min-h-screen p-3 md:p-6 font-sans text-slate-800">
+  <div class="max-w-md mx-auto bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+    <h1 class="text-xl font-bold text-slate-800 mb-4 text-center">🥗 ไดอารี่แคลอรี่ AI</h1>
 
+    <!-- ตั้งค่า API Key -->
     <div class="mb-4">
-      <label class="block text-xs font-medium text-gray-500 mb-1">Gemini API Key ของคุณ</label>
-      <input type="password" id="apiKeyInput" placeholder="วาง API Key ที่นี่ (กรอกครั้งเดียว)" 
-             class="w-full border rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+      <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Gemini API Key</label>
+      <input type="password" id="apiKeyInput" placeholder="วาง API Key ที่นี่" 
+             class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
     </div>
 
-    <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 text-center mb-4">
-      <div class="text-xs text-blue-600 font-semibold">แคลอรี่รวมวันนี้</div>
-      <div class="text-3xl font-extrabold text-blue-900 my-1"><span id="totalCal">0</span> <span class="text-sm font-normal">kcal</span></div>
-      <button onclick="clearToday()" class="text-xs text-red-500 hover:underline">ล้างรายการของวันนี้</button>
+    <!-- ส่วนเลือกดูวันที่จากปฏิทิน -->
+    <div class="mb-4 p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between">
+      <label for="datePicker" class="text-xs font-semibold text-slate-600">📅 เลือกวันที่:</label>
+      <input type="date" id="datePicker" onchange="onDateChange()" 
+             class="border border-slate-300 rounded-lg px-2.5 py-1 text-sm bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
     </div>
 
-    <div class="mb-3">
-      <label class="block text-xs font-medium text-gray-500 mb-1">มื้ออาหาร</label>
-      <select id="mealType" class="w-full border rounded-lg p-2 text-sm mb-2 bg-white">
-        <option>มื้อเช้า</option>
-        <option>มื้อเที่ยง</option>
-        <option>มื้อเย็น</option>
-        <option>ของว่าง</option>
-      </select>
-      <input type="text" id="foodText" placeholder="เช่น ข้าวโอ๊ต 400 กรัม ไข่ต้ม 2 ฟอง" 
-             class="w-full border rounded-lg p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+    <!-- กล่องสรุปแคลอรี่รวมของวันที่เลือก -->
+    <div class="bg-blue-600 text-white rounded-xl p-4 text-center mb-4 shadow-sm">
+      <div class="text-xs font-medium text-blue-100 uppercase tracking-wide">แคลอรี่รวมของวันนี้</div>
+      <div class="text-3xl font-extrabold my-1"><span id="totalCal">0</span> <span class="text-sm font-normal">kcal</span></div>
+      <div id="selectedDateLabel" class="text-xs text-blue-200 mt-1"></div>
     </div>
 
-    <button id="calcBtn" onclick="calculateCal()" 
-            class="w-full bg-blue-600 text-white font-medium py-2.5 rounded-lg text-sm hover:bg-blue-700 transition">
-      คำนวณและบันทึก
-    </button>
-
-    <div class="mt-6">
-      <h2 class="text-sm font-semibold text-gray-700 mb-2">มื้ออาหารที่บันทึกวันนี้</h2>
-      <div id="mealList" class="space-y-2">
-        <p class="text-xs text-gray-400 text-center py-4">ยังไม่มีรายการอาหาร</p>
+    <!-- สรุปแยกแต่ละมื้อ -->
+    <div class="grid grid-cols-4 gap-2 mb-5 text-center">
+      <div class="bg-slate-50 p-2 rounded-lg border border-slate-200">
+        <div class="text-[10px] text-slate-500 font-semibold">เช้า</div>
+        <div id="sumBreakfast" class="text-sm font-bold text-slate-800">0</div>
       </div>
+      <div class="bg-slate-50 p-2 rounded-lg border border-slate-200">
+        <div class="text-[10px] text-slate-500 font-semibold">เที่ยง</div>
+        <div id="sumLunch" class="text-sm font-bold text-slate-800">0</div>
+      </div>
+      <div class="bg-slate-50 p-2 rounded-lg border border-slate-200">
+        <div class="text-[10px] text-slate-500 font-semibold">เย็น</div>
+        <div id="sumDinner" class="text-sm font-bold text-slate-800">0</div>
+      </div>
+      <div class="bg-slate-50 p-2 rounded-lg border border-slate-200">
+        <div class="text-[10px] text-slate-500 font-semibold">ว่าง</div>
+        <div id="sumSnack" class="text-sm font-bold text-slate-800">0</div>
+      </div>
+    </div>
+
+    <!-- ฟอร์มกรอกรายการอาหาร -->
+    <div class="space-y-2 mb-4 bg-slate-50 p-3.5 rounded-xl border border-slate-200">
+      <label class="block text-xs font-bold text-slate-700">เพิ่มรายการอาหารใหม่</label>
+      <div class="flex gap-2">
+        <select id="mealType" class="border border-slate-300 rounded-lg p-2 text-sm bg-white focus:outline-none">
+          <option value="มื้อเช้า">มื้อเช้า</option>
+          <option value="มื้อเที่ยง">มื้อเที่ยง</option>
+          <option value="มื้อเย็น">มื้อเย็น</option>
+          <option value="ของว่าง">ของว่าง</option>
+        </select>
+        <input type="text" id="foodText" placeholder="เช่น ข้าวโอ๊ต 400 กรัม ไข่ต้ม 2 ฟอง" 
+               class="flex-1 border border-slate-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+      </div>
+      <button id="calcBtn" onclick="calculateCal()" 
+              class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-lg text-sm transition">
+        คำนวณและบันทึก
+      </button>
+    </div>
+
+    <!-- รายการอาหารประจำวัน -->
+    <div class="mt-4">
+      <div class="flex justify-between items-center mb-2">
+        <h2 class="text-sm font-bold text-slate-700">รายการที่บันทึกไว้</h2>
+        <button onclick="clearCurrentDate()" class="text-xs text-red-500 hover:underline">ล้างข้อมูลวันนี้</button>
+      </div>
+      <div id="mealList" class="space-y-2"></div>
     </div>
   </div>
 
   <script>
-    // ดึงวันที่ปัจจุบันมาเป็น Key เพื่อแยกวันอัตโนมัติ
-    const today = new Date().toISOString().slice(0, 10);
-    const STORAGE_KEY = 'meal_data_' + today;
-    let meals = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+    // ตั้งค่าเริ่มต้นให้ปฏิทินเป็นวันที่ปัจจุบัน
+    const datePicker = document.getElementById('datePicker');
+    datePicker.value = new Date().toISOString().slice(0, 10);
 
-    // ดึง API Key ที่เคยบันทึกไว้ในเครื่อง
+    // ดึง API Key เดิมที่เคยกรอกไว้
     document.getElementById('apiKeyInput').value = localStorage.getItem('my_gemini_key') || '';
+
+    // โหลดข้อมูลขึ้นมาแสดง
     render();
+
+    function getStorageKey(dateStr) {
+      return 'meal_diary_' + dateStr;
+    }
+
+    function getMeals(dateStr) {
+      return JSON.parse(localStorage.getItem(getStorageKey(dateStr))) || [];
+    }
+
+    function saveMeals(dateStr, meals) {
+      localStorage.setItem(getStorageKey(dateStr), JSON.stringify(meals));
+    }
+
+    function onDateChange() {
+      render();
+    }
 
     async function calculateCal() {
       const apiKey = document.getElementById('apiKeyInput').value.trim();
       const food = document.getElementById('foodText').value.trim();
       const mealType = document.getElementById('mealType').value;
+      const selectedDate = datePicker.value;
       const btn = document.getElementById('calcBtn');
 
       if (!apiKey) return alert('กรุณาใส่ API Key ก่อนนะครับ');
-      if (!food) return alert('กรุณาพิมพ์รายการอาหารที่กินครับ');
+      if (!food) return alert('กรุณาระบุรายการอาหาร');
+      if (!selectedDate) return alert('กรุณาเลือกวันที่');
 
-      // จำ Key ไว้ในเครื่อง
       localStorage.setItem('my_gemini_key', apiKey);
       btn.disabled = true;
-      btn.innerText = 'กำลังคำนวณ... กรุณารอสักครู่';
+      btn.innerText = 'กำลังคำนวณแคลอรี่...';
 
-      const prompt = `ประเมินแคลอรี่ของ: "${food}" ตอบกลับมาเฉพาะรูปแบบ JSON เท่านั้น ตัวอย่าง: {"calories": 520, "summary": "รายละเอียดสั้นๆ"}`;
+      const prompt = `ประเมินแคลอรี่ของ: "${food}" ตอบกลับเฉพาะรูปแบบ JSON object: {"calories": number, "summary": "รายละเอียดวัตถุดิบสั้นๆ"}`;
 
       try {
         const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`, {
@@ -90,15 +141,16 @@
 
         const result = JSON.parse(data.candidates[0].content.parts[0].text);
 
-        // เพิ่มรายการเข้าบันทึก
+        const meals = getMeals(selectedDate);
         meals.push({
+          id: Date.now(),
           time: mealType,
           food: food,
-          cal: result.calories || 0,
+          cal: Number(result.calories) || 0,
           desc: result.summary || ''
         });
 
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(meals));
+        saveMeals(selectedDate, meals);
         document.getElementById('foodText').value = '';
         render();
       } catch (err) {
@@ -110,37 +162,86 @@
     }
 
     function render() {
+      const selectedDate = datePicker.value;
+      const meals = getMeals(selectedDate);
       const listEl = document.getElementById('mealList');
       const totalEl = document.getElementById('totalCal');
-      
+      document.getElementById('selectedDateLabel').innerText = `ข้อมูล ณ วันที่: ${selectedDate}`;
+
+      let total = 0;
+      let sumMeals = { 'มื้อเช้า': 0, 'มื้อเที่ยง': 0, 'มื้อเย็น': 0, 'ของว่าง': 0 };
+
       if (meals.length === 0) {
-        listEl.innerHTML = '<p class="text-xs text-gray-400 text-center py-4">ยังไม่มีรายการอาหาร</p>';
-        totalEl.innerText = 0;
-        return;
+        listEl.innerHTML = '<p class="text-xs text-slate-400 text-center py-6">ไม่มีรายการอาหารในวันที่เลือก</p>';
+      } else {
+        listEl.innerHTML = meals.map((m, index) => {
+          total += m.cal;
+          if (sumMeals[m.time] !== undefined) sumMeals[m.time] += m.cal;
+
+          return `
+            <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl">
+              <div class="flex justify-between items-start">
+                <div>
+                  <span class="text-[10px] bg-blue-100 text-blue-700 font-bold px-2 py-0.5 rounded">${m.time}</span>
+                  <div class="text-sm font-semibold text-slate-800 mt-1">${m.food}</div>
+                  ${m.desc ? `<div class="text-[11px] text-slate-500">${m.desc}</div>` : ''}
+                </div>
+                <div class="text-right">
+                  <div class="text-base font-bold text-slate-900">${m.cal} <span class="text-xs font-normal">kcal</span></div>
+                  <div class="mt-1 flex gap-2 justify-end text-xs">
+                    <button onclick="editMeal(${m.id})" class="text-blue-600 hover:underline">แก้ไข</button>
+                    <button onclick="deleteMeal(${m.id})" class="text-red-500 hover:underline">ลบ</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+        }).reverse().join('');
       }
 
-      let sum = 0;
-      listEl.innerHTML = meals.map(m => {
-        sum += m.cal;
-        return `
-          <div class="p-3 bg-slate-50 border rounded-lg flex justify-between items-center">
-            <div>
-              <span class="text-[10px] bg-blue-100 text-blue-700 font-semibold px-2 py-0.5 rounded">${m.time}</span>
-              <div class="text-sm font-medium text-slate-800 mt-1">${m.food}</div>
-              ${m.desc ? `<div class="text-[11px] text-gray-500">${m.desc}</div>` : ''}
-            </div>
-            <div class="text-base font-bold text-slate-900">${m.cal} <span class="text-xs font-normal">kcal</span></div>
-          </div>
-        `;
-      }).reverse().join('');
-
-      totalEl.innerText = sum.toLocaleString();
+      // อัปเดตตัวเลขแคลอรี่ทั้งหมดและแยกมื้อ
+      totalEl.innerText = total.toLocaleString();
+      document.getElementById('sumBreakfast').innerText = sumMeals['มื้อเช้า'];
+      document.getElementById('sumLunch').innerText = sumMeals['มื้อเที่ยง'];
+      document.getElementById('sumDinner').innerText = sumMeals['มื้อเย็น'];
+      document.getElementById('sumSnack').innerText = sumMeals['ของว่าง'];
     }
 
-    function clearToday() {
-      if (confirm('ต้องการล้างข้อมูลของวันนี้ทั้งหมดใช่ไหม?')) {
-        meals = [];
-        localStorage.removeItem(STORAGE_KEY);
+    // ฟังก์ชันแก้ไขรายการอาหาร (กด Edit)
+    function editMeal(id) {
+      const selectedDate = datePicker.value;
+      const meals = getMeals(selectedDate);
+      const target = meals.find(m => m.id === id);
+      if (!target) return;
+
+      const newFood = prompt('แก้ไขชื่ออาหารและปริมาณ:', target.food);
+      if (newFood === null) return; // กดยกเลิก
+
+      const newCal = prompt('แก้ไขตัวเลขแคลอรี่ (kcal):', target.cal);
+      if (newCal === null) return;
+
+      target.food = newFood.trim() || target.food;
+      target.cal = Number(newCal) || 0;
+
+      saveMeals(selectedDate, meals);
+      render();
+    }
+
+    // ฟังก์ชันลบรายการอาหาร
+    function deleteMeal(id) {
+      if (!confirm('ต้องการลบรายการนี้ใช่ไหม?')) return;
+      const selectedDate = datePicker.value;
+      let meals = getMeals(selectedDate);
+      meals = meals.filter(m => m.id !== id);
+      saveMeals(selectedDate, meals);
+      render();
+    }
+
+    // ฟังก์ชันล้างข้อมูลของทั้งวัน
+    function clearCurrentDate() {
+      const selectedDate = datePicker.value;
+      if (confirm(`คุณต้องการลบข้อมูลทั้งหมดของวันที่ ${selectedDate} ใช่หรือไม่?`)) {
+        localStorage.removeItem(getStorageKey(selectedDate));
         render();
       }
     }
